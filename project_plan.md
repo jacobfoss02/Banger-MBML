@@ -126,7 +126,7 @@ The PyMC notebook uses **HSGP** (Hilbert-Space Gaussian Process) approximations 
 
 ---
 
-## 9. One-paragraph abstract (draft for the report)
+## 8. One-paragraph abstract (draft for the report)
 
 > Norwegian live-birth counts over 1966–2025 reflect a complex interplay of demographic trends, stable annual seasonality, and occasional shocks. We build a Bayesian additive-GP decomposition in Pyro, with a slow Matérn trend, a periodic × slowly-warping seasonal, and an RBF short-term component, observed through a Negative-Binomial likelihood on 720 monthly counts. Inference is performed with SVI using a mean-field guide; the model is first validated on synthetic data before fitting to real observations. The fitted model cleanly separates the 1970s fertility transition, a slowly-drifting seasonal shape, and a quantified COVID-2020 dip, and its 12-month-ahead forecast for 2025 outperforms a seasonal-naive and a Bayesian structural-time-series baseline in log-predictive density, CRPS, and coverage.
 

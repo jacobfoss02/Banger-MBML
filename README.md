@@ -2,3 +2,5 @@
 Model Based Machine Learning project test
 
 bæsj bæsj bæsj bæsj
+
+sjekk project_plan💅
