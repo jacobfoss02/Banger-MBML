@@ -1,6 +1,6 @@
 # MBML Project Plan — Bayesian decomposition of Norwegian live births, 1966–2025
 
-*Course: 02477 Model-Based Machine Learning, DTU, Spring 2026*
+*Course: 42186 Model-Based Machine Learning, DTU, Spring 2026*
 *Author: Jacob — draft plan, 20 April 2026*
 
 ---
