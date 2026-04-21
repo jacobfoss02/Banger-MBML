@@ -94,7 +94,6 @@ The PyMC notebook uses **HSGP** (Hilbert-Space Gaussian Process) approximations 
 
 3. **Full model on real data — SVI.** Fit the exact additive GP to 1966–2024 training data with `AutoNormal` (mean-field) guide and `ClippedAdam`. Produce component decomposition plot, variance breakdown, COVID-2020 shock quantification, 2025 forecast, and evaluation table vs. baselines. Consolidated evaluation table added as a final section of this same notebook. *(done — `03_gp_svi.ipynb`)*
 
-4. **Report.** 5–6 page IEEE-style report drawing on all figures and tables already produced.
 
 **Inference note.** SVI with `AutoNormal` is the primary inference method throughout. Mean-field posteriors underestimate uncertainty in the component functions due to ignored cross-time correlations; this is acknowledged as a limitation in the report. Full NUTS is noted as future work and is not a deliverable.
 
@@ -117,24 +116,7 @@ The PyMC notebook uses **HSGP** (Hilbert-Space Gaussian Process) approximations 
 
 ---
 
-## 7. Deliverables and milestones (final delivery 15 May 2026)
-
-| Date | Milestone | Output |
-|---|---|---|
-| 20 Apr | Plan signed off, data cleaned, EDA done | `project_plan.md` + `eda_overview.png` |
-| 22 Apr | Baselines complete | `01_baselines.ipynb` ✓ |
-| 26 Apr | Synthetic GP recovery complete | `02_synthetic_recovery.ipynb` ✓ |
-| 29 Apr | Exact additive GP + SVI on real data; consolidated eval table | `03_gp_svi.ipynb` ✓ |
-| 3 May  | Report draft: model, inference, and results sections | `report_draft.pdf` |
-| 8 May  | Report draft complete: intro, conclusion, figures finalized | `report_draft_v2.pdf` |
-| 12 May | Final polish of all notebooks; report proofread | — |
-| 15 May | Submit notebook + report | — |
-
-Final deliverable layout (project description slide 10): a **single self-explanatory master notebook** that knits together the three stages, plus the 5–6 page IEEE-style report.
-
----
-
-## 8. Risks & open decisions
+## 7. Risks & open decisions
 
 1. **Is monthly resolution rich enough for a GP-decomposition story?** Yes — 720 points, clear components, and with Bayesian uncertainty it's the *quality of the decomposition and the forecast*, not the volume, that matters.
 2. **Is SVI sufficient as the only inference method?** Yes, with caveats. Mean-field AutoNormal gives approximate marginals; uncertainty in smooth components like the trend is likely underestimated. This is acknowledged in the report as a limitation and NUTS is mentioned as the natural next step. The decomposition results and forecast ranking are not expected to change qualitatively.
