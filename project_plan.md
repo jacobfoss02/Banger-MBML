@@ -1,7 +1,7 @@
 # MBML Project Plan — Bayesian decomposition of Norwegian live births, 1966–2025
 
-*Course: 02477 Model-Based Machine Learning, DTU, Spring 2026*
-*Author: Jacob — draft plan, 20 April 2026*
+*Course: 42186 Model-Based Machine Learning, DTU, Spring 2026*
+*Author: Jacob — revised plan, 21 April 2026*
 
 ---
 
@@ -84,23 +84,25 @@ Observed nodes are $y_i$ (shaded). All other nodes are latent (priors listed abo
 
 ## 5. Pyro implementation strategy
 
-The PyMC notebook uses **HSGP** (Hilbert-Space Gaussian Process) approximations to make the GP tractable for ~7000 daily data points. Pyro has no built-in HSGP, but we have only **720 monthly** data points — *exact GPs are feasible* (covariance matrix is 720×720, factorisable in milliseconds).
+The PyMC notebook uses **HSGP** (Hilbert-Space Gaussian Process) approximations to make the GP tractable for ~7000 daily data points. With only **720 monthly** data points, *exact GPs are feasible* — the covariance matrix is 720×720, factorisable in milliseconds. HSGP is therefore not needed for inference speed and is out of scope for this project; it is noted as a natural extension in the report conclusion.
 
-### Plan:
+### Plan
 
-1. **Stage 1 — baseline (exact GP in Pyro).** Use `pyro.contrib.gp` or hand-written covariance + `MultivariateNormal`. Build the additive-GP model above; infer with SVI (AutoNormal / AutoLowRankMVN guide) for speed and NUTS for a gold-standard run on the final model. Verify on synthetic data first (sample from prior, run inference, recover parameters — exactly as the project-description slide 18 recommends).
-2. **Stage 2 — HSGP reimplementation in Pyro.** As an extension and for a strong "model-driven" contribution (since HSGP isn't in Pyro), reimplement the Hilbert-space approximation ourselves:
-   - For the RBF / Matérn trend and short-term components, use the standard Laplace-eigenfunction basis on $[-L, L]$ with $m$ basis functions; the spectral density of the kernel determines the prior variance of each basis weight. We need only $\mathcal{O}(m \cdot n)$ storage, not $n^2$.
-   - For the periodic kernel, use the Fourier-series representation (equation from Solin & Särkkä 2020; this is what PyMC's periodic HSGP does).
-   - Deliverable of this stage: a mini `pyro_hsgp.py` module and a comparison with the exact GP. This gives us a paper-style *model-driven* contribution on top of the data-driven question.
-3. **Inference.** SVI (ELBO) with `AutoLowRankMVNormal`, then NUTS via `MCMC(NUTS(...))` on the hyperparameters for final results. Report both, as slide 16 recommends.
-4. **Forecasting.** At test time, use GP posterior predictive at new time points (2025-01 to 2025-12, plus 2026 extrapolation) by sampling from the posterior over component functions and passing through the NB likelihood.
+1. **Baselines.** Seasonal-naive and BSTS (local-linear-trend + fixed monthly seasonals), inferred with SVI in Pyro. Establishes the comparison target. *(done — `01_baselines.ipynb`)*
+
+2. **Synthetic recovery.** Sample from the additive-GP prior with known hyperparameters; verify that SVI recovers them from synthetic counts. Prior predictive check, ELBO convergence, component decomposition on synthetic data. *(done — `02_synthetic_recovery.ipynb`)*
+
+3. **Full model on real data — SVI.** Fit the exact additive GP to 1966–2024 training data with `AutoNormal` (mean-field) guide and `ClippedAdam`. Produce component decomposition plot, variance breakdown, COVID-2020 shock quantification, 2025 forecast, and evaluation table vs. baselines. Consolidated evaluation table added as a final section of this same notebook. *(done — `03_gp_svi.ipynb`)*
+
+4. **Report.** 5–6 page IEEE-style report drawing on all figures and tables already produced.
+
+**Inference note.** SVI with `AutoNormal` is the primary inference method throughout. Mean-field posteriors underestimate uncertainty in the component functions due to ignored cross-time correlations; this is acknowledged as a limitation in the report. Full NUTS is noted as future work and is not a deliverable.
 
 ### Baselines (slide 17: "always try a simple baseline")
 
 1. **Seasonal-naive.** $\hat y_{t} = y_{t-12}$.
-2. **Bayesian structural time-series.** Local-linear-trend + fixed seasonal (monthly dummies), implemented in Pyro via Kalman filtering or as a flat latent state — much simpler than the GP model, good sanity check.
-3. **No-trend GP.** Just seasonal + short-term, to show the trend component earns its keep.
+2. **Bayesian structural time-series.** Local-linear-trend + fixed seasonal (monthly dummies), implemented in Pyro — much simpler than the GP model, good sanity check.
+3. **No-trend GP.** Just seasonal + short-term, to show the trend component earns its keep (optional, can be a brief ablation in the report).
 
 ---
 
@@ -119,34 +121,33 @@ The PyMC notebook uses **HSGP** (Hilbert-Space Gaussian Process) approximations 
 
 | Date | Milestone | Output |
 |---|---|---|
-| 20 Apr (today) | Plan signed off, data cleaned, EDA figure done | this file + `norway_births_monthly.csv` + `eda_overview.png` |
-| 22 Apr | Pyro baseline: structural TS + seasonal-naive | `01_baselines.ipynb` |
-| 26 Apr | Exact additive-GP working on synthetic data | `02_synthetic_recovery.ipynb` |
-| 29 Apr | Exact additive-GP fitted to 1966–2024 with SVI | `03_gp_svi.ipynb` |
-| 2 May  | NUTS run + posterior-predictive + component plots | `04_gp_nuts.ipynb` |
-| 5 May  | HSGP reimplementation & comparison | `05_hsgp.ipynb` + `pyro_hsgp.py` |
-| 8 May  | Forecast evaluation on 2025 hold-out, tables | `06_forecast_eval.ipynb` |
-| 12 May | Report draft (IEEE 6-page, double column) | `report.pdf` |
-| 15 May | Final polish, submit notebook + report | — |
+| 20 Apr | Plan signed off, data cleaned, EDA done | `project_plan.md` + `eda_overview.png` |
+| 22 Apr | Baselines complete | `01_baselines.ipynb` ✓ |
+| 26 Apr | Synthetic GP recovery complete | `02_synthetic_recovery.ipynb` ✓ |
+| 29 Apr | Exact additive GP + SVI on real data; consolidated eval table | `03_gp_svi.ipynb` ✓ |
+| 3 May  | Report draft: model, inference, and results sections | `report_draft.pdf` |
+| 8 May  | Report draft complete: intro, conclusion, figures finalized | `report_draft_v2.pdf` |
+| 12 May | Final polish of all notebooks; report proofread | — |
+| 15 May | Submit notebook + report | — |
 
-Final deliverable layout (project description slide 10): a **single self-explanatory master notebook** that knits together the stages (with links to the helper notebooks for completeness), plus the 6-page IEEE-style report.
+Final deliverable layout (project description slide 10): a **single self-explanatory master notebook** that knits together the three stages, plus the 5–6 page IEEE-style report.
 
 ---
 
 ## 8. Risks & open decisions
 
-1. **Is monthly resolution rich enough for a GP-decomposition story?** Yes — 720 points, clear components, and with Bayesian uncertainty it's the *quality of the decomposition and the forecast*, not the volume, that matters. If we want more content for the report, we can introduce the HSGP reimplementation (stage 2) and/or compare to a hierarchical pooling of Norwegian regional data if available.
-2. **Is HSGP necessary?** No for inference speed at $n=720$. Yes if we want a *model-driven* extension and a meatier report. Recommend we do it.
-3. **Likelihood: NegBin vs. Gaussian on log y.** Recommend NegBin — cleaner story, honest handling of counts, and it echoes the project-description spatial-count-model slide (slide 24).
-4. **Extra covariates?** Could add monthly unemployment, COVID-lockdown-stringency index, or policy indicators (parental leave reforms) as extensions. Out of scope for v1; good "future work" mention.
+1. **Is monthly resolution rich enough for a GP-decomposition story?** Yes — 720 points, clear components, and with Bayesian uncertainty it's the *quality of the decomposition and the forecast*, not the volume, that matters.
+2. **Is SVI sufficient as the only inference method?** Yes, with caveats. Mean-field AutoNormal gives approximate marginals; uncertainty in smooth components like the trend is likely underestimated. This is acknowledged in the report as a limitation and NUTS is mentioned as the natural next step. The decomposition results and forecast ranking are not expected to change qualitatively.
+3. **Likelihood: NegBin vs. Gaussian on log y.** NegBin — cleaner story, honest handling of counts, and it echoes the project-description spatial-count-model slide (slide 24). Already implemented.
+4. **Extra covariates?** Could add unemployment, COVID-lockdown-stringency, or parental-leave policy indicators as extensions. Out of scope; good "future work" mention.
 5. **Discrete latents?** Slide 14 warns that discrete latents need special treatment in Pyro. Our design has *no* discrete latents, by choice.
 
 ---
 
 ## 9. One-paragraph abstract (draft for the report)
 
-> Norwegian live-birth counts over 1966–2025 reflect a complex interplay of demographic trends, stable annual seasonality and occasional shocks. We build a Bayesian additive-GP decomposition in Pyro, with a slow Matérn trend, a periodic × slowly-warping seasonal, and an RBF short-term component, observed through a Negative-Binomial likelihood. Inference is performed with both SVI and NUTS, and the Hilbert-space approximation of Solin & Särkkä is implemented from scratch in Pyro as a methodological contribution. The fitted model cleanly separates the 1970s fertility transition, a slowly-drifting seasonal shape, and a ~10% COVID-2020 dip, and its 12-month-ahead forecast for 2025 outperforms a seasonal-naive and a Bayesian structural-time-series baseline in log-predictive density, CRPS, and coverage.
+> Norwegian live-birth counts over 1966–2025 reflect a complex interplay of demographic trends, stable annual seasonality, and occasional shocks. We build a Bayesian additive-GP decomposition in Pyro, with a slow Matérn trend, a periodic × slowly-warping seasonal, and an RBF short-term component, observed through a Negative-Binomial likelihood on 720 monthly counts. Inference is performed with SVI using a mean-field guide; the model is first validated on synthetic data before fitting to real observations. The fitted model cleanly separates the 1970s fertility transition, a slowly-drifting seasonal shape, and a quantified COVID-2020 dip, and its 12-month-ahead forecast for 2025 outperforms a seasonal-naive and a Bayesian structural-time-series baseline in log-predictive density, CRPS, and coverage.
 
 ---
 
-*Next action after sign-off: create `01_baselines.ipynb` and `02_synthetic_recovery.ipynb` — start simple, then build up. (Slide 17.)*
+*All code notebooks are complete. Remaining work: consolidated evaluation table (minor addition to `03_gp_svi.ipynb`) and the written report.*
