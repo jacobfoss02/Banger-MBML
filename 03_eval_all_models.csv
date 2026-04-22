@@ -1,0 +1,2 @@
+Model,RMSE,MAE,CRPS,Cov80,Cov95,LPD
+Additive GP (SVI),390.0,331.8,224.7,0.92,1.0,-7.42
